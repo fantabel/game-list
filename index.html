@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jeux terminés</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 24px; line-height: 1.35; }
+    h1 { margin: 0 0 8px; }
+    .meta { color: #666; margin-bottom: 16px; }
+    .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 14px; }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 999px; border: 1px solid #ccc; font-size: 12px; }
+    select, input { padding: 8px; font-size: 14px; }
+    .filters { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0; }
+    .title { font-weight: 650; }
+    .small { color:#666; font-size: 13px; }
+    ul { margin: 10px 0 0 18px; }
+  </style>
+</head>
+<body>
+  <h1>Jeux terminés</h1>
+  <div class="meta">3 catégories : seen the credits · completed · mastered</div>
+
+  <div class="filters">
+    <label>Recherche
+      <input id="q" placeholder="ex: Far Cry" />
+    </label>
+    <label>Catégorie
+      <select id="cat">
+        <option value="">Toutes</option>
+        <option value="seen_the_credits">Seen the credits</option>
+        <option value="completed">Completed</option>
+        <option value="mastered">Mastered</option>
+      </select>
+    </label>
+    <label>Année
+      <select id="year">
+        <option value="">Toutes</option>
+      </select>
+    </label>
+  </div>
+
+  <div id="root" class="grid"></div>
+
+  <script>
+    const root = document.getElementById('root');
+    const q = document.getElementById('q');
+    const cat = document.getElementById('cat');
+    const year = document.getElementById('year');
+
+    let all = [];
+
+    function labelCategory(c){
+      return c === 'seen_the_credits' ? 'Seen the credits'
+           : c === 'completed' ? 'Completed'
+           : 'Mastered';
+    }
+
+    function render() {
+      const query = q.value.trim().toLowerCase();
+      const c = cat.value;
+      const y = year.value;
+
+      const filtered = all.filter(g => {
+        const okQ = !query || g.title.toLowerCase().includes(query);
+        const okC = !c || g.category === c;
+        const okY = !y || String(g.year) === y;
+        return okQ && okC && okY;
+      });
+
+      root.innerHTML = filtered.map(g => `
+        <div class="card">
+          <div class="title">${g.title}</div>
+          <div class="small">${g.year ?? ''}</div>
+          <div style="margin-top:8px">
+            <span class="tag">${labelCategory(g.category)}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function main() {
+      const res = await fetch('./data.json');
+      const data = await res.json();
+      all = (data.games || []).slice().sort((a,b)=> (b.year||0)-(a.year||0) || a.title.localeCompare(b.title));
+
+      // remplir les années
+      const years = [...new Set(all.map(g => g.year).filter(Boolean))].sort((a,b)=>b-a);
+      for (const y of years) {
+        const opt = document.createElement('option');
+        opt.value = String(y);
+        opt.textContent = String(y);
+        year.appendChild(opt);
+      }
+
+      q.addEventListener('input', render);
+      cat.addEventListener('change', render);
+      year.addEventListener('change', render);
+      render();
+    }
+
+    main();
+  </script>
+</body>
+</html>

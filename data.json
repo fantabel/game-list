@@ -1,0 +1,9 @@
+{
+  "categories": ["seen_the_credits", "completed", "mastered"],
+  "games": [
+    { "title": "Luigi's Mansion 3", "category": "seen_the_credits", "year": 2025 },
+    { "title": "Risk of Rain 2", "category": "seen_the_credits", "year": 2025 },
+    { "title": "Far Cry 4", "category": "seen_the_credits", "year": 2025 },
+    { "title": "Far Cry Primal", "category": "seen_the_credits", "year": 2025 }
+  ]
+}
